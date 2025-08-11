@@ -139,31 +139,37 @@ export default function Home() {
     // Caso contrário, mostra os itens da categoria selecionada
     if (catKey === "porcoes") {
       return (
-        <div className="space-y-6">
+        <div className="space-y-8">
           {Object.entries(cat.sections).map(([sectionName, items]) => (
-            <div key={sectionName}>
-              <h3 className="text-lg font-semibold mb-2 capitalize">
+            <div key={sectionName} className="bg-white/5 rounded-lg p-6">
+              <h3 className="text-xl font-semibold mb-4 capitalize border-b border-white/10 pb-2">
                 {sectionName}
               </h3>
               <div className="grid md:grid-cols-2 gap-4">
                 {items.map((it, idx) => (
                   <div
                     key={idx}
-                    className="p-4 bg-white/5 rounded-lg flex justify-between items-center"
+                    className="p-4 bg-white/10 rounded-lg hover:bg-white/15 transition-colors"
                   >
-                    <div>
-                      <div className="font-medium">{it.name}</div>
-                      {it.desc && (
-                        <div className="text-sm text-gray-400">{it.desc}</div>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm text-gray-300">Inteira</div>
-                      <div className="font-semibold">
-                        {formatPrice(it.price.inteira)}
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="font-medium text-lg">{it.name}</div>
+                        {it.desc && (
+                          <div className="text-sm text-gray-400 mt-1">
+                            {it.desc}
+                          </div>
+                        )}
                       </div>
-                      <div className="text-sm text-gray-300 mt-1">Meia</div>
-                      <div>{formatPrice(it.price.meia)}</div>
+                      <div className="text-right">
+                        <div className="text-sm text-gray-300">Inteira</div>
+                        <div className="font-semibold text-orange-400">
+                          {formatPrice(it.price.inteira)}
+                        </div>
+                        <div className="text-sm text-gray-300 mt-1">Meia</div>
+                        <div className="text-orange-300">
+                          {formatPrice(it.price.meia)}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -179,7 +185,7 @@ export default function Home() {
         {(cat.items || []).map((item, idx) => (
           <div
             key={idx}
-            className="p-4 bg-white/5 rounded-lg flex justify-between items-start"
+            className="p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors flex justify-between items-start"
           >
             <div>
               <div className="font-medium text-lg">{item.name}</div>

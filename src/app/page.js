@@ -24,9 +24,9 @@ export default function Home() {
     "cervejas",
     "sucos",
   ];
-  const [active, setActive] = useState("lanches");
+  const [active, setActive] = useState("somenteEspetinho");
   const [q, setQ] = useState("");
-  const [menuOpen, setMenuOpen] = useState(false); // Estado para controlar a visibilidade do menu
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -116,7 +116,6 @@ export default function Home() {
       <main className="min-h-screen bg-gradient-to-b from-[#0b0b0b] to-[#141212] text-white p-6">
         <header className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            {/* Botão do menu hamburguer - visível apenas em mobile */}
             <button
               onClick={toggleMenu}
               className="md:hidden flex flex-col justify-center items-center w-8 h-8"
@@ -153,39 +152,58 @@ export default function Home() {
           </div>
         </header>
 
-        <section className="max-w-5xl mx-auto mt-8 grid md:grid-cols-[220px_1fr] gap-8">
-          {/* Menu lateral - escondido em mobile quando fechado */}
+        {/* Tabs para desktop */}
+        <div className="max-w-5xl mx-auto mt-6 block">
+          <div className="flex overflow-x-auto pb-2 scrollbar-hide">
+            <div className="flex space-x-1">
+              {categories.map((key) => (
+                <button
+                  key={key}
+                  onClick={() => {
+                    setActive(key);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  className={`px-4 py-2 rounded-t-lg text-sm font-medium whitespace-nowrap ${
+                    active === key
+                      ? "bg-red-600 text-white"
+                      : "bg-white/10 text-gray-200 hover:bg-white/20"
+                  }`}
+                >
+                  {menu[key]?.title || key}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <section className="max-w-5xl mx-auto mt-0 md:mt-4">
+          {/* Menu lateral para mobile */}
           <aside
             className={`${
-              menuOpen
-                ? "fixed inset-0 z-50 bg-[#0b0b0b] p-6 md:bg-white/3 md:relative md:p-4"
-                : "hidden md:block"
-            } bg-white/10 rounded-lg md:p-4 transition-all`}
+              menuOpen ? "fixed inset-0 z-50 bg-[#0b0b0b] p-6" : "hidden"
+            } md:hidden`}
           >
-            <nav className="flex flex-col gap-2 bg-[#242424] p-4 rounded-lg">
-              {/* Botão de fechar no mobile */}
-              {menuOpen && (
-                <button
-                  onClick={toggleMenu}
-                  className="self-end mb-4 text-4xl md:hidden z-50"
-                  aria-label="Fechar menu"
-                >
-                  &times;
-                </button>
-              )}
+            <nav className="flex flex-col gap-2">
+              <button
+                onClick={toggleMenu}
+                className="self-end mb-4 text-2xl"
+                aria-label="Fechar menu"
+              >
+                &times;
+              </button>
 
               {categories.map((key) => (
                 <button
                   key={key}
                   onClick={() => {
                     setActive(key);
-                    setMenuOpen(false); // Fecha o menu ao selecionar uma categoria
+                    setMenuOpen(false);
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
                   className={`text-left px-3 py-2 rounded-md w-full ${
                     active === key
                       ? "bg-orange-600 text-white"
-                      : "hover:bg-white/5 text-gray-200"
+                      : "hover:bg-white/10 text-gray-200"
                   }`}
                 >
                   {menu[key]?.title || key}
@@ -194,26 +212,13 @@ export default function Home() {
             </nav>
           </aside>
 
-          <div>
+          <div className="bg-white/5 rounded-b-lg rounded-t-none md:rounded-t-lg p-6">
             <h2 className="text-2xl font-semibold mb-4">
               {menu[active]?.title}
             </h2>
             {renderItems(active)}
           </div>
         </section>
-
-        <footer>
-          <p className={`p small self-center text-center m-[1rem]`}>
-            Desenvolvido por{" "}
-            <a
-              className="text-[--primary-color] hover:opacity-70 underline underline-offset-2"
-              href="https://hdeveloper.vercel.app/"
-              target="_blank"
-            >
-              HDeveloper
-            </a>
-          </p>
-        </footer>
       </main>
     </>
   );

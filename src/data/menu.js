@@ -191,7 +191,7 @@ export const menu = {
         },
         { name: "Calabresa", price: { inteira: 33.99, meia: 23.99 } },
         { name: "Mandioca Frita", price: { inteira: 27.99, meia: 20.99 } },
-        { name: "Torcém (Torresmo?)", price: { inteira: 24.99, meia: 18.99 } },
+        { name: "Torresmo", price: { inteira: 24.99, meia: 18.99 } },
         {
           name: "Porção Mista de Frios",
           price: { inteira: 59.99, meia: 44.99 },

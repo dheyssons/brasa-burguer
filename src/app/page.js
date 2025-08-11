@@ -1,6 +1,6 @@
 "use client";
 import Head from "next/head";
-import { useState } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { menu } from "../data/menu";
 
 function formatPrice(p) {
@@ -26,16 +26,117 @@ export default function Home() {
   ];
   const [active, setActive] = useState("somenteEspetinho");
   const [q, setQ] = useState("");
-  const [menuOpen, setMenuOpen] = useState(false);
+  const tabsRef = useRef(null);
+  const tabRefs = useRef({});
 
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
-  };
+  useEffect(() => {
+    if (tabRefs.current[active] && tabsRef.current) {
+      const tabElement = tabRefs.current[active];
+      const tabsContainer = tabsRef.current;
+
+      // Calcula a posição para centralizar a tab
+      const tabLeft = tabElement.offsetLeft;
+      const tabWidth = tabElement.offsetWidth;
+      const containerWidth = tabsContainer.offsetWidth;
+      const scrollLeft = tabLeft - containerWidth / 2 + tabWidth / 2;
+
+      tabsContainer.scrollTo({
+        left: scrollLeft,
+        behavior: "smooth",
+      });
+    }
+  }, [active]);
+
+  // Função para buscar em todos os itens de todas as categorias
+  const searchAllItems = useMemo(() => {
+    if (!q) return null;
+
+    const results = [];
+
+    categories.forEach((categoryKey) => {
+      const category = menu[categoryKey];
+      if (!category) return;
+
+      // Tratamento especial para a categoria "porcoes"
+      if (categoryKey === "porcoes") {
+        Object.entries(category.sections).forEach(([sectionName, items]) => {
+          items.forEach((item) => {
+            if (item.name.toLowerCase().includes(q.toLowerCase())) {
+              results.push({
+                ...item,
+                category: category.title,
+                section: sectionName,
+              });
+            }
+          });
+        });
+      }
+      // Para outras categorias
+      else if (category.items) {
+        category.items.forEach((item) => {
+          if (item.name.toLowerCase().includes(q.toLowerCase())) {
+            results.push({
+              ...item,
+              category: category.title,
+            });
+          }
+        });
+      }
+    });
+
+    return results;
+  }, [q]);
 
   const renderItems = (catKey) => {
     const cat = menu[catKey];
     if (!cat) return null;
 
+    // Se há termo de busca, mostra resultados globais
+    if (q && searchAllItems) {
+      return (
+        <div className="space-y-4">
+          <div className="text-sm text-gray-400 mb-4">
+            Mostrando resultados para "{q}" em todas as categorias
+          </div>
+
+          {searchAllItems.map((item, idx) => (
+            <div
+              key={idx}
+              className="p-4 bg-white/5 rounded-lg flex justify-between items-start"
+            >
+              <div>
+                <div className="font-medium text-lg">{item.name}</div>
+                <div className="text-sm text-gray-400">
+                  {item.category}
+                  {item.section ? ` • ${item.section}` : ""}
+                </div>
+                {item.desc && (
+                  <div className="text-sm text-gray-400 mt-1">{item.desc}</div>
+                )}
+              </div>
+              <div className="text-right">
+                {item.price.inteira ? (
+                  <>
+                    <div className="text-sm text-gray-300">Inteira</div>
+                    <div className="font-semibold">
+                      {formatPrice(item.price.inteira)}
+                    </div>
+                    <div className="text-sm text-gray-300 mt-1">Meia</div>
+                    <div>{formatPrice(item.price.meia)}</div>
+                  </>
+                ) : (
+                  <div className="text-orange-400 font-bold text-lg">
+                    {formatPrice(item.price)}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // Caso contrário, mostra os itens da categoria selecionada
     if (catKey === "porcoes") {
       return (
         <div className="space-y-6">
@@ -45,31 +146,27 @@ export default function Home() {
                 {sectionName}
               </h3>
               <div className="grid md:grid-cols-2 gap-4">
-                {items
-                  .filter((item) =>
-                    item.name.toLowerCase().includes(q.toLowerCase())
-                  )
-                  .map((it, idx) => (
-                    <div
-                      key={idx}
-                      className="p-4 bg-white/5 rounded-lg flex justify-between items-center"
-                    >
-                      <div>
-                        <div className="font-medium">{it.name}</div>
-                        {it.desc && (
-                          <div className="text-sm text-gray-400">{it.desc}</div>
-                        )}
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm text-gray-300">Inteira</div>
-                        <div className="font-semibold">
-                          {formatPrice(it.price.inteira)}
-                        </div>
-                        <div className="text-sm text-gray-300 mt-1">Meia</div>
-                        <div>{formatPrice(it.price.meia)}</div>
-                      </div>
+                {items.map((it, idx) => (
+                  <div
+                    key={idx}
+                    className="p-4 bg-white/5 rounded-lg flex justify-between items-center"
+                  >
+                    <div>
+                      <div className="font-medium">{it.name}</div>
+                      {it.desc && (
+                        <div className="text-sm text-gray-400">{it.desc}</div>
+                      )}
                     </div>
-                  ))}
+                    <div className="text-right">
+                      <div className="text-sm text-gray-300">Inteira</div>
+                      <div className="font-semibold">
+                        {formatPrice(it.price.inteira)}
+                      </div>
+                      <div className="text-sm text-gray-300 mt-1">Meia</div>
+                      <div>{formatPrice(it.price.meia)}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           ))}
@@ -79,26 +176,24 @@ export default function Home() {
 
     return (
       <div className="grid gap-4">
-        {(cat.items || [])
-          .filter((it) => it.name.toLowerCase().includes(q.toLowerCase()))
-          .map((item, idx) => (
-            <div
-              key={idx}
-              className="p-4 bg-white/5 rounded-lg flex justify-between items-start"
-            >
-              <div>
-                <div className="font-medium text-lg">{item.name}</div>
-                {item.desc && (
-                  <div className="text-sm text-gray-400 mt-1">{item.desc}</div>
-                )}
-              </div>
-              <div className="text-right">
-                <div className="text-orange-400 font-bold text-lg">
-                  {formatPrice(item.price)}
-                </div>
+        {(cat.items || []).map((item, idx) => (
+          <div
+            key={idx}
+            className="p-4 bg-white/5 rounded-lg flex justify-between items-start"
+          >
+            <div>
+              <div className="font-medium text-lg">{item.name}</div>
+              {item.desc && (
+                <div className="text-sm text-gray-400 mt-1">{item.desc}</div>
+              )}
+            </div>
+            <div className="text-right">
+              <div className="text-orange-400 font-bold text-lg">
+                {formatPrice(item.price)}
               </div>
             </div>
-          ))}
+          </div>
+        ))}
       </div>
     );
   };
@@ -115,57 +210,39 @@ export default function Home() {
 
       <main className="min-h-screen bg-gradient-to-b from-[#0b0b0b] to-[#141212] text-white p-6">
         <header className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={toggleMenu}
-              className="md:hidden flex flex-col justify-center items-center w-8 h-8"
-              aria-label="Abrir menu"
-            >
-              <span
-                className={`block w-6 h-0.5 bg-white mb-1.5 transition-all ${
-                  menuOpen ? "rotate-45 translate-y-2" : ""
-                }`}
-              ></span>
-              <span
-                className={`block w-6 h-0.5 bg-white mb-1.5 transition-all ${
-                  menuOpen ? "opacity-0" : ""
-                }`}
-              ></span>
-              <span
-                className={`block w-6 h-0.5 bg-white transition-all ${
-                  menuOpen ? "-rotate-45 -translate-y-2" : ""
-                }`}
-              ></span>
-            </button>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-              Brasa Burger
-            </h1>
-          </div>
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
+            Brasa Burger
+          </h1>
 
           <div className="flex gap-3 items-center">
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Buscar item..."
+              placeholder="Buscar em todos os itens..."
               className="bg-white/6 placeholder:text-gray-300 px-3 py-2 rounded-md outline-none"
             />
           </div>
         </header>
 
-        {/* Tabs para desktop */}
-        <div className="max-w-5xl mx-auto mt-6 block">
-          <div className="flex overflow-x-auto pb-2 scrollbar-hide">
-            <div className="flex space-x-1">
+        {/* Tabs para navegação */}
+        <div className="max-w-5xl mx-auto mt-6">
+          <div
+            ref={tabsRef}
+            className="flex overflow-x-auto pb-2 scrollbar-hide scroll-smooth"
+          >
+            <div className="flex space-x-2">
               {categories.map((key) => (
                 <button
                   key={key}
+                  ref={(el) => (tabRefs.current[key] = el)}
                   onClick={() => {
                     setActive(key);
+                    setQ("");
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
-                  className={`px-4 py-2 rounded-t-lg text-sm font-medium whitespace-nowrap ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap flex-shrink-0 ${
                     active === key
-                      ? "bg-red-600 text-white"
+                      ? "bg-orange-600 text-white"
                       : "bg-white/10 text-gray-200 hover:bg-white/20"
                   }`}
                 >
@@ -176,46 +253,13 @@ export default function Home() {
           </div>
         </div>
 
-        <section className="max-w-5xl mx-auto mt-0 md:mt-4">
-          {/* Menu lateral para mobile */}
-          <aside
-            className={`${
-              menuOpen ? "fixed inset-0 z-50 bg-[#0b0b0b] p-6" : "hidden"
-            } md:hidden`}
-          >
-            <nav className="flex flex-col gap-2">
-              <button
-                onClick={toggleMenu}
-                className="self-end mb-4 text-2xl"
-                aria-label="Fechar menu"
-              >
-                &times;
-              </button>
-
-              {categories.map((key) => (
-                <button
-                  key={key}
-                  onClick={() => {
-                    setActive(key);
-                    setMenuOpen(false);
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }}
-                  className={`text-left px-3 py-2 rounded-md w-full ${
-                    active === key
-                      ? "bg-orange-600 text-white"
-                      : "hover:bg-white/10 text-gray-200"
-                  }`}
-                >
-                  {menu[key]?.title || key}
-                </button>
-              ))}
-            </nav>
-          </aside>
-
-          <div className="bg-white/5 rounded-b-lg rounded-t-none md:rounded-t-lg p-6">
-            <h2 className="text-2xl font-semibold mb-4">
-              {menu[active]?.title}
-            </h2>
+        <section className="max-w-5xl mx-auto mt-4">
+          <div className="bg-white/5 rounded-lg p-6">
+            {!q && (
+              <h2 className="text-2xl font-semibold mb-4">
+                {menu[active]?.title}
+              </h2>
+            )}
             {renderItems(active)}
           </div>
         </section>

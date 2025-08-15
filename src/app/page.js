@@ -27,7 +27,7 @@ export default function Home() {
     "sucos",
   ];
   const [q, setQ] = useState("");
-  const [active, setActive] = useState("somenteEspetinho");
+  const [active, setActive] = useState("");
   const tabsRef = useRef(null);
   const tabRefs = useRef({});
   const categoryRefs = useRef({});
@@ -147,7 +147,7 @@ export default function Home() {
           ref={(el) => (categoryRefs.current[catKey] = el)}
           className="space-y-8 mb-12"
         >
-          <h2 className="text-3xl sticky top-0 bg-[#5C1A1A] font-semibold mb-6 border-b border-white/10 p-4">
+          <h2 className="text-3xl sticky top-0 bg-[#772020] font-semibold mb-6 border-b border-white/10 p-4">
             {cat.title}
           </h2>
 
@@ -198,7 +198,7 @@ export default function Home() {
         ref={(el) => (categoryRefs.current[catKey] = el)}
         className="mb-12"
       >
-        <h2 className="text-3xl font-semibold mb-6 sticky top-0 border-b bg-[#5C1A1A] border-white/10 p-4">
+        <h2 className="text-3xl font-semibold mb-6 sticky top-0 border-b bg-[#772020] border-white/10 p-4">
           {cat.title}
         </h2>
         <div className="grid gap-4">
@@ -235,7 +235,7 @@ export default function Home() {
         />
       </Head>
 
-      <main className="min-h-screen bg-[#5C1A1A] text-white">
+      <main className="min-h-screen bg-[#772020] text-white">
         <header className="max-w-screen mx-auto flex flex-col md:flex-row items-center justify-around gap-4 p-6 ">
           <Image src={Logo} alt="" className="w-40" />
 

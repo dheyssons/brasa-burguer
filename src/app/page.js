@@ -2,6 +2,8 @@
 import Head from "next/head";
 import { useState, useMemo, useRef, useEffect } from "react";
 import { menu } from "../data/menu";
+import Image from "next/image";
+import Logo from "../../public/logo.png";
 
 function formatPrice(p) {
   if (typeof p === "number")
@@ -24,10 +26,11 @@ export default function Home() {
     "cervejas",
     "sucos",
   ];
-  const [active, setActive] = useState("somenteEspetinho");
   const [q, setQ] = useState("");
+  const [active, setActive] = useState("somenteEspetinho");
   const tabsRef = useRef(null);
   const tabRefs = useRef({});
+  const categoryRefs = useRef({});
 
   useEffect(() => {
     if (tabRefs.current[active] && tabsRef.current) {
@@ -42,6 +45,21 @@ export default function Home() {
 
       tabsContainer.scrollTo({
         left: scrollLeft,
+        behavior: "smooth",
+      });
+    }
+
+    // Rolagem para a seção da categoria
+    if (categoryRefs.current[active]) {
+      const offset = 100; // Ajuste para o cabeçalho fixo
+      const element = categoryRefs.current[active];
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = element.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
         behavior: "smooth",
       });
     }
@@ -87,61 +105,24 @@ export default function Home() {
     return results;
   }, [q]);
 
-  const renderItems = (catKey) => {
+  const renderCategory = (catKey) => {
     const cat = menu[catKey];
     if (!cat) return null;
 
-    // Se há termo de busca, mostra resultados globais
-    if (q && searchAllItems) {
-      return (
-        <div className="space-y-4">
-          <div className="text-sm text-gray-400 mb-4">
-            Mostrando resultados para "{q}" em todas as categorias
-          </div>
-
-          {searchAllItems.map((item, idx) => (
-            <div
-              key={idx}
-              className="p-4 bg-white/5 rounded-lg flex justify-between items-start"
-            >
-              <div>
-                <div className="font-medium text-lg">{item.name}</div>
-                <div className="text-sm text-gray-400">
-                  {item.category}
-                  {item.section ? ` • ${item.section}` : ""}
-                </div>
-                {item.desc && (
-                  <div className="text-sm text-gray-400 mt-1">{item.desc}</div>
-                )}
-              </div>
-              <div className="text-right">
-                {item.price.inteira ? (
-                  <>
-                    <div className="text-sm text-gray-300">Inteira</div>
-                    <div className="font-semibold">
-                      {formatPrice(item.price.inteira)}
-                    </div>
-                    <div className="text-sm text-gray-300 mt-1">Meia</div>
-                    <div>{formatPrice(item.price.meia)}</div>
-                  </>
-                ) : (
-                  <div className="text-orange-400 font-bold text-lg">
-                    {formatPrice(item.price)}
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    // Caso contrário, mostra os itens da categoria selecionada
+    // Se for a categoria de porções, renderiza de forma especial
     if (catKey === "porcoes") {
       return (
-        <div className="space-y-8">
+        <div
+          key={catKey}
+          ref={(el) => (categoryRefs.current[catKey] = el)}
+          className="space-y-8 mb-12"
+        >
+          <h2 className="text-3xl font-semibold mb-6 border-b border-white/10 pb-2">
+            {cat.title}
+          </h2>
+
           {Object.entries(cat.sections).map(([sectionName, items]) => (
-            <div key={sectionName} className="bg-white/5 rounded-lg p-6">
+            <div key={sectionName} className="bg-white/5 rounded-lg p-3 mb-6">
               <h3 className="text-xl font-semibold mb-4 capitalize border-b border-white/10 pb-2">
                 {sectionName}
               </h3>
@@ -149,11 +130,11 @@ export default function Home() {
                 {items.map((it, idx) => (
                   <div
                     key={idx}
-                    className="p-4 bg-white/10 rounded-lg hover:bg-white/15 transition-colors"
+                    className="p-2 bg-white/10 rounded-lg hover:bg-white/15 transition-colors"
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <div className="font-medium text-lg">{it.name}</div>
+                        <div className="font-bold text-xl">{it.name}</div>
                         {it.desc && (
                           <div className="text-sm text-gray-400 mt-1">
                             {it.desc}
@@ -162,11 +143,11 @@ export default function Home() {
                       </div>
                       <div className="text-right">
                         <div className="text-sm text-gray-300">Inteira</div>
-                        <div className="font-semibold text-orange-400">
+                        <div className="font-semibold text-white">
                           {formatPrice(it.price.inteira)}
                         </div>
                         <div className="text-sm text-gray-300 mt-1">Meia</div>
-                        <div className="text-orange-300">
+                        <div className="text-white">
                           {formatPrice(it.price.meia)}
                         </div>
                       </div>
@@ -180,26 +161,36 @@ export default function Home() {
       );
     }
 
+    // Para outras categorias
     return (
-      <div className="grid gap-4">
-        {(cat.items || []).map((item, idx) => (
-          <div
-            key={idx}
-            className="p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors flex justify-between items-start"
-          >
-            <div>
-              <div className="font-medium text-lg">{item.name}</div>
-              {item.desc && (
-                <div className="text-sm text-gray-400 mt-1">{item.desc}</div>
-              )}
-            </div>
-            <div className="text-right">
-              <div className="text-orange-400 font-bold text-lg">
-                {formatPrice(item.price)}
+      <div
+        key={catKey}
+        ref={(el) => (categoryRefs.current[catKey] = el)}
+        className="mb-12"
+      >
+        <h2 className="text-3xl font-semibold mb-6 sticky top-0 border-b bg-[#5C1A1A] border-white/10 p-4">
+          {cat.title}
+        </h2>
+        <div className="grid gap-4">
+          {(cat.items || []).map((item, idx) => (
+            <div
+              key={idx}
+              className="p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors flex justify-between items-start"
+            >
+              <div>
+                <div className="font-medium text-lg">{item.name}</div>
+                {item.desc && (
+                  <div className="text-sm text-white/75 mt-1">{item.desc}</div>
+                )}
+              </div>
+              <div className="text-right">
+                <div className="text-white font-thin text-lg">
+                  {formatPrice(item.price)}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     );
   };
@@ -214,23 +205,19 @@ export default function Home() {
         />
       </Head>
 
-      <main className="min-h-screen bg-gradient-to-b from-[#0b0b0b] to-[#141212] text-white p-6">
-        <header className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-            Brasa Burger
-          </h1>
+      <main className="min-h-screen bg-[#5C1A1A] text-white">
+        <header className="max-w-screen mx-auto flex flex-col md:flex-row items-center justify-around gap-4 p-6 ">
+          <Image src={Logo} alt="" className="w-40" />
 
           <div className="flex gap-3 items-center">
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Buscar em todos os itens..."
+              placeholder="Buscar"
               className="bg-white/6 placeholder:text-gray-300 px-3 py-2 rounded-md outline-none"
             />
           </div>
         </header>
-
-        {/* Tabs para navegação */}
         <div className="max-w-5xl mx-auto mt-6">
           <div
             ref={tabsRef}
@@ -244,11 +231,10 @@ export default function Home() {
                   onClick={() => {
                     setActive(key);
                     setQ("");
-                    window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
                   className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap flex-shrink-0 ${
                     active === key
-                      ? "bg-orange-600 text-white"
+                      ? "bg-[#7B1E1E] text-white"
                       : "bg-white/10 text-gray-200 hover:bg-white/20"
                   }`}
                 >
@@ -259,15 +245,54 @@ export default function Home() {
           </div>
         </div>
 
-        <section className="max-w-5xl mx-auto mt-4">
-          <div className="bg-white/5 rounded-lg p-6">
-            {!q && (
-              <h2 className="text-2xl font-semibold mb-4">
-                {menu[active]?.title}
-              </h2>
-            )}
-            {renderItems(active)}
-          </div>
+        <section className="max-w-5xl mx-auto mt-8 p-3">
+          {q && searchAllItems ? (
+            <div className="space-y-4">
+              <div className="text-sm text-gray-400 mb-4">
+                Mostrando resultados para "{q}" em todas as categorias
+              </div>
+
+              {searchAllItems.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="p-4 bg-white/5 rounded-lg flex justify-between items-start"
+                >
+                  <div>
+                    <div className="font-bold text-xl">{item.name}</div>
+                    <div className="text-sm text-gray-400">
+                      {item.category}
+                      {item.section ? ` • ${item.section}` : ""}
+                    </div>
+                    {item.desc && (
+                      <div className="text-sm text-gray-400 mt-1">
+                        {item.desc}
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    {item.price.inteira ? (
+                      <>
+                        <div className="text-sm text-gray-300">Inteira</div>
+                        <div className="font-semibold">
+                          {formatPrice(item.price.inteira)}
+                        </div>
+                        <div className="text-sm text-gray-300 mt-1">Meia</div>
+                        <div>{formatPrice(item.price.meia)}</div>
+                      </>
+                    ) : (
+                      <div className="text-white font-thin text-lg">
+                        {formatPrice(item.price)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-12">
+              {categories.map((catKey) => renderCategory(catKey))}
+            </div>
+          )}
         </section>
       </main>
     </>

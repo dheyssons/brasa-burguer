@@ -37,7 +37,6 @@ export default function Home() {
       const tabElement = tabRefs.current[active];
       const tabsContainer = tabsRef.current;
 
-      // Calcula a posição para centralizar a tab
       const tabLeft = tabElement.offsetLeft;
       const tabWidth = tabElement.offsetWidth;
       const containerWidth = tabsContainer.offsetWidth;
@@ -49,9 +48,8 @@ export default function Home() {
       });
     }
 
-    // Rolagem para a seção da categoria
     if (categoryRefs.current[active]) {
-      const offset = 100; // Ajuste para o cabeçalho fixo
+      const offset = 100;
       const element = categoryRefs.current[active];
       const bodyRect = document.body.getBoundingClientRect().top;
       const elementRect = element.getBoundingClientRect().top;
@@ -69,17 +67,51 @@ export default function Home() {
   const searchAllItems = useMemo(() => {
     if (!q) return null;
 
+    const searchTerm = q.toLowerCase();
     const results = [];
 
+    // Primeiro verifica se a pesquisa corresponde a uma categoria
+    const matchingCategories = categories.filter((catKey) => {
+      const catTitle = menu[catKey]?.title?.toLowerCase();
+      return catTitle?.includes(searchTerm);
+    });
+
+    // Se encontrou categorias correspondentes, adiciona todos os itens dessas categorias
+    if (matchingCategories.length > 0) {
+      matchingCategories.forEach((categoryKey) => {
+        const category = menu[categoryKey];
+        if (!category) return;
+
+        if (categoryKey === "porcoes") {
+          Object.entries(category.sections).forEach(([sectionName, items]) => {
+            items.forEach((item) => {
+              results.push({
+                ...item,
+                category: category.title,
+                section: sectionName,
+              });
+            });
+          });
+        } else if (category.items) {
+          category.items.forEach((item) => {
+            results.push({
+              ...item,
+              category: category.title,
+            });
+          });
+        }
+      });
+    }
+
+    // Depois verifica os itens individuais
     categories.forEach((categoryKey) => {
       const category = menu[categoryKey];
       if (!category) return;
 
-      // Tratamento especial para a categoria "porcoes"
       if (categoryKey === "porcoes") {
         Object.entries(category.sections).forEach(([sectionName, items]) => {
           items.forEach((item) => {
-            if (item.name.toLowerCase().includes(q.toLowerCase())) {
+            if (item.name.toLowerCase().includes(searchTerm)) {
               results.push({
                 ...item,
                 category: category.title,
@@ -88,11 +120,9 @@ export default function Home() {
             }
           });
         });
-      }
-      // Para outras categorias
-      else if (category.items) {
+      } else if (category.items) {
         category.items.forEach((item) => {
-          if (item.name.toLowerCase().includes(q.toLowerCase())) {
+          if (item.name.toLowerCase().includes(searchTerm)) {
             results.push({
               ...item,
               category: category.title,
@@ -102,7 +132,7 @@ export default function Home() {
       }
     });
 
-    return results;
+    return results.length > 0 ? results : null;
   }, [q]);
 
   const renderCategory = (catKey) => {
@@ -117,7 +147,7 @@ export default function Home() {
           ref={(el) => (categoryRefs.current[catKey] = el)}
           className="space-y-8 mb-12"
         >
-          <h2 className="text-3xl font-semibold mb-6 border-b border-white/10 pb-2">
+          <h2 className="text-3xl sticky top-0 bg-[#5C1A1A] font-semibold mb-6 border-b border-white/10 p-4">
             {cat.title}
           </h2>
 
@@ -134,9 +164,9 @@ export default function Home() {
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <div className="font-bold text-xl">{it.name}</div>
+                        <div className="w-50 font-bold text-xl">{it.name}</div>
                         {it.desc && (
-                          <div className="text-sm text-gray-400 mt-1">
+                          <div className="text-sm text-white/75 mt-1">
                             {it.desc}
                           </div>
                         )}
@@ -178,7 +208,7 @@ export default function Home() {
               className="p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors flex justify-between items-start"
             >
               <div>
-                <div className="font-medium text-lg">{item.name}</div>
+                <div className="w-50 font-bold text-xl">{item.name}</div>
                 {item.desc && (
                   <div className="text-sm text-white/75 mt-1">{item.desc}</div>
                 )}
@@ -259,12 +289,12 @@ export default function Home() {
                 >
                   <div>
                     <div className="font-bold text-xl">{item.name}</div>
-                    <div className="text-sm text-gray-400">
+                    <div className="text-sm text-white/75 hidden">
                       {item.category}
                       {item.section ? ` • ${item.section}` : ""}
                     </div>
                     {item.desc && (
-                      <div className="text-sm text-gray-400 mt-1">
+                      <div className="text-sm text-white/75 mt-1">
                         {item.desc}
                       </div>
                     )}

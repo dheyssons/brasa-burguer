@@ -288,7 +288,7 @@ export const menu = {
     title: "BEBIDAS",
     items: [
       { name: "Agua Mineral 500ml", price: 3.99 },
-      { name: "Agua com Gaz 500ml", price: 4.99 },
+      { name: "Agua com Gás 500ml", price: 4.99 },
       { name: "Coca-Cola Lata 350ml", price: 6.99 },
       { name: "Coca-Cola Lata Zero 350ml", price: 6.99 },
       { name: "Coca-Cola 600ml", price: 7.99 },
@@ -312,8 +312,8 @@ export const menu = {
     title: "CERVEJAS",
     items: [
       { name: "Skol Lata 269ml", price: 6.99 },
-      { name: "Brama Lata 269ml", price: 6.99 },
-      { name: "Brama Long Neck Zero", price: 6.99 },
+      { name: "Brahma Lata 269ml", price: 6.99 },
+      { name: "Brahma Long Neck Zero", price: 6.99 },
       { name: "Original Lata 269ml", price: 6.99 },
       { name: "Heineken Lata 269ml", price: 6.99 },
       { name: "Heineken Long Neck", price: 12.99 },
@@ -322,7 +322,7 @@ export const menu = {
       { name: "Ice Cabaré Frutas Vermelhas", price: 12.99 },
       { name: "Corona Long Neck", price: 11.99 },
       { name: "Spaten Long Neck", price: 9.99 },
-      { name: "Stella Long Neck", price: 9.99 },
+      { name: "Stella Artois Long Neck", price: 9.99 },
     ],
   },
 

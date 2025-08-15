@@ -164,7 +164,7 @@ export default function Home() {
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <div className="w-50 font-bold text-xl">{it.name}</div>
+                        <div className="w-56 font-bold text-xl">{it.name}</div>
                         {it.desc && (
                           <div className="text-sm text-white/75 mt-1">
                             {it.desc}
@@ -208,7 +208,7 @@ export default function Home() {
               className="p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors flex justify-between items-start"
             >
               <div>
-                <div className="w-50 font-bold text-xl">{item.name}</div>
+                <div className="w-56 font-bold text-xl">{item.name}</div>
                 {item.desc && (
                   <div className="text-sm text-white/75 mt-1">{item.desc}</div>
                 )}

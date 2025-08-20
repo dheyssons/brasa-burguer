@@ -63,47 +63,11 @@ export default function Home() {
     }
   }, [active]);
 
-  // Função para buscar em todos os itens de todas as categorias
   const searchAllItems = useMemo(() => {
     if (!q) return null;
-
     const searchTerm = q.toLowerCase();
     const results = [];
 
-    // Primeiro verifica se a pesquisa corresponde a uma categoria
-    const matchingCategories = categories.filter((catKey) => {
-      const catTitle = menu[catKey]?.title?.toLowerCase();
-      return catTitle?.includes(searchTerm);
-    });
-
-    // Se encontrou categorias correspondentes, adiciona todos os itens dessas categorias
-    if (matchingCategories.length > 0) {
-      matchingCategories.forEach((categoryKey) => {
-        const category = menu[categoryKey];
-        if (!category) return;
-
-        if (categoryKey === "porcoes") {
-          Object.entries(category.sections).forEach(([sectionName, items]) => {
-            items.forEach((item) => {
-              results.push({
-                ...item,
-                category: category.title,
-                section: sectionName,
-              });
-            });
-          });
-        } else if (category.items) {
-          category.items.forEach((item) => {
-            results.push({
-              ...item,
-              category: category.title,
-            });
-          });
-        }
-      });
-    }
-
-    // Depois verifica os itens individuais
     categories.forEach((categoryKey) => {
       const category = menu[categoryKey];
       if (!category) return;
@@ -111,7 +75,10 @@ export default function Home() {
       if (categoryKey === "porcoes") {
         Object.entries(category.sections).forEach(([sectionName, items]) => {
           items.forEach((item) => {
-            if (item.name.toLowerCase().includes(searchTerm)) {
+            if (
+              item.name.toLowerCase().includes(searchTerm) ||
+              category.title.toLowerCase().includes(searchTerm)
+            ) {
               results.push({
                 ...item,
                 category: category.title,
@@ -122,7 +89,10 @@ export default function Home() {
         });
       } else if (category.items) {
         category.items.forEach((item) => {
-          if (item.name.toLowerCase().includes(searchTerm)) {
+          if (
+            item.name.toLowerCase().includes(searchTerm) ||
+            category.title.toLowerCase().includes(searchTerm)
+          ) {
             results.push({
               ...item,
               category: category.title,
@@ -139,82 +109,29 @@ export default function Home() {
     const cat = menu[catKey];
     if (!cat) return null;
 
-    // Se for a categoria de porções, renderiza de forma especial
-    if (catKey === "porcoes") {
-      return (
-        <div
-          key={catKey}
-          ref={(el) => (categoryRefs.current[catKey] = el)}
-          className="space-y-8 mb-12"
-        >
-          <h2 className="text-3xl sticky top-0 bg-[#5C1A1A] font-semibold mb-6 border-b border-white/10 p-4">
-            {cat.title}
-          </h2>
-
-          {Object.entries(cat.sections).map(([sectionName, items]) => (
-            <div key={sectionName} className="bg-white/5 rounded-lg p-3 mb-6">
-              <h3 className="text-xl font-semibold mb-4 capitalize border-b border-white/10 pb-2">
-                {sectionName}
-              </h3>
-              <div className="grid md:grid-cols-2 gap-4">
-                {items.map((it, idx) => (
-                  <div
-                    key={idx}
-                    className="p-2 bg-white/10 rounded-lg hover:bg-white/15 transition-colors"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="w-56 font-bold text-xl">{it.name}</div>
-                        {it.desc && (
-                          <div className="text-sm text-white/75 mt-1">
-                            {it.desc}
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm text-gray-300">Inteira</div>
-                        <div className="font-semibold text-white">
-                          {formatPrice(it.price.inteira)}
-                        </div>
-                        <div className="text-sm text-gray-300 mt-1">Meia</div>
-                        <div className="text-white">
-                          {formatPrice(it.price.meia)}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    // Para outras categorias
     return (
       <div
         key={catKey}
         ref={(el) => (categoryRefs.current[catKey] = el)}
         className="mb-12"
       >
-        <h2 className="text-3xl font-semibold mb-6 sticky top-0 border-b bg-[#5C1A1A] border-white/10 p-4">
+        <h2 className="text-2xl font-bold tracking-wide mb-4 sticky top-0 border-b bg-black text-yellow-400 p-3 shadow">
           {cat.title}
         </h2>
         <div className="grid gap-4">
           {(cat.items || []).map((item, idx) => (
             <div
               key={idx}
-              className="p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors flex justify-between items-start"
+              className="p-4 bg-neutral-900 rounded-xl hover:bg-neutral-800 transition-colors flex justify-between items-center shadow-md"
             >
-              <div>
-                <div className="w-56 font-bold text-xl">{item.name}</div>
+              <div className="flex flex-col gap-y-2">
+                <div className="font-semibold text-lg text-white">
+                  {item.name}
+                </div>
                 {item.desc && (
-                  <div className="text-sm text-white/75 mt-1">{item.desc}</div>
+                  <div className="text-sm text-gray-400">{item.desc}</div>
                 )}
-              </div>
-              <div className="text-right">
-                <div className="text-white font-thin text-lg">
+                <div className="text-yellow-400 font-thin text-lg">
                   {formatPrice(item.price)}
                 </div>
               </div>
@@ -235,19 +152,21 @@ export default function Home() {
         />
       </Head>
 
-      <main className="min-h-screen bg-[#5C1A1A] text-white">
-        <header className="max-w-screen mx-auto flex flex-col md:flex-row items-center justify-around gap-4 p-6 ">
-          <Image src={Logo} alt="" className="w-40" />
-
-          <div className="flex gap-3 items-center">
+      <main className="min-h-screen bg-black text-white">
+        {/* Header */}
+        <header className="max-w-screen mx-auto flex flex-col md:flex-row items-center justify-between gap-4 p-6 border-b border-neutral-800">
+          <Image src={Logo} alt="" className="w-32" />
+          <div className="flex gap-3 items-center w-full md:w-auto">
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Buscar"
-              className="bg-white/6 placeholder:text-gray-300 px-3 py-2 rounded-md outline-none"
+              className="bg-neutral-900 text-white placeholder:text-gray-500 px-4 py-2 rounded-full outline-none w-full md:w-64"
             />
           </div>
         </header>
+
+        {/* Tabs */}
         <div className="max-w-5xl mx-auto mt-6">
           <div
             ref={tabsRef}
@@ -264,8 +183,8 @@ export default function Home() {
                   }}
                   className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap flex-shrink-0 ${
                     active === key
-                      ? "bg-[#7B1E1E] text-white"
-                      : "bg-white/10 text-gray-200 hover:bg-white/20"
+                      ? "bg-yellow-500 text-black"
+                      : "bg-neutral-800 text-gray-300 hover:bg-neutral-700"
                   }`}
                 >
                   {menu[key]?.title || key}
@@ -275,45 +194,32 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Content */}
         <section className="max-w-5xl mx-auto mt-8 p-3">
           {q && searchAllItems ? (
             <div className="space-y-4">
               <div className="text-sm text-gray-400 mb-4">
-                Mostrando resultados para "{q}" em todas as categorias
+                Mostrando resultados para "{q}"
               </div>
-
               {searchAllItems.map((item, idx) => (
                 <div
                   key={idx}
-                  className="p-4 bg-white/5 rounded-lg flex justify-between items-start"
+                  className="p-4 bg-neutral-900 rounded-xl flex justify-between items-center shadow-md"
                 >
                   <div>
-                    <div className="font-bold text-xl">{item.name}</div>
-                    <div className="text-sm text-white/75 hidden">
-                      {item.category}
-                      {item.section ? ` • ${item.section}` : ""}
-                    </div>
+                    <div className="font-semibold text-lg">{item.name}</div>
                     {item.desc && (
-                      <div className="text-sm text-white/75 mt-1">
+                      <div className="text-sm text-gray-400 mt-1">
                         {item.desc}
                       </div>
                     )}
-                  </div>
-                  <div className="text-right">
-                    {item.price.inteira ? (
-                      <>
-                        <div className="text-sm text-gray-300">Inteira</div>
-                        <div className="font-semibold">
-                          {formatPrice(item.price.inteira)}
-                        </div>
-                        <div className="text-sm text-gray-300 mt-1">Meia</div>
-                        <div>{formatPrice(item.price.meia)}</div>
-                      </>
-                    ) : (
-                      <div className="text-white font-thin text-lg">
-                        {formatPrice(item.price)}
-                      </div>
-                    )}
+                    <div className="text-yellow-400 font-thin mt-2">
+                      {item.price.inteira
+                        ? `${formatPrice(item.price.inteira)} / ${formatPrice(
+                            item.price.meia
+                          )}`
+                        : formatPrice(item.price)}
+                    </div>
                   </div>
                 </div>
               ))}
